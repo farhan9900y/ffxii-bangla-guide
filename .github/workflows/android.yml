@@ -20,6 +20,13 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
+    - name: Generate Gradle Wrapper if missing
+      run: |
+        if [ ! -f "gradlew" ] && [ ! -f "android/gradlew" ]; then
+          echo "Gradlew not found, generating a new wrapper..."
+          gradle wrapper
+        fi
+
     - name: Grant execute permission for gradlew
       run: |
         find . -name gradlew -exec chmod +x {} \;
@@ -27,18 +34,18 @@ jobs:
     - name: Build with Gradle
       run: |
         if [ -f "gradlew" ]; then
-          ./gradlew tasks --all || true
           ./gradlew assembleDebug || ./gradlew build || ./gradlew bundleDebug
         elif [ -f "android/gradlew" ]; then
           cd android
-          ./gradlew tasks --all || true
           ./gradlew assembleDebug || ./gradlew build || ./gradlew bundleDebug
         else
-          # Find where gradlew is and run it
-          GRADLE_DIR=$(dirname $(find . -name gradlew | head -n 1))
-          cd $GRADLE_DIR
-          ./gradlew tasks --all || true
-          ./gradlew assembleDebug || ./gradlew build || ./gradlew bundleDebug
+          GRADLE_DIR=$(dirname $(find . -name gradlew | head -n 1 2>/dev/null) || echo ".")
+          if [ "$GRADLE_DIR" != "." ] && [ -n "$GRADLE_DIR" ]; then
+            cd $GRADLE_DIR
+            ./gradlew assembleDebug || ./gradlew build || ./gradlew bundleDebug
+          else
+            gradle assembleDebug || gradle build
+          fi
         fi
 
     - name: Upload APK
