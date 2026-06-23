@@ -1,0 +1,6 @@
+{
+  "name": "Final Fantasy XII Bangla Jini",
+  "description": "কমপ্লিট ফাইনাল ফ্যান্টাসি ১২ বাংলা গাইডবুক এবং ভয়েস অ্যাসিস্ট্যান্ট। Complete Final Fantasy XII Bangla Guidebook and Voice Assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
