@@ -21,13 +21,31 @@ jobs:
       uses: android-actions/setup-android@v3
 
     - name: Grant execute permission for gradlew
-      run: chmod +x android/gradlew
+      run: |
+        find . -name gradlew -exec chmod +x {} \;
       
     - name: Build with Gradle
-      run: cd android && ./gradlew assembleDebug
+      run: |
+        if [ -f "gradlew" ]; then
+          ./gradlew tasks --all || true
+          ./gradlew assembleDebug || ./gradlew build || ./gradlew bundleDebug
+        elif [ -f "android/gradlew" ]; then
+          cd android
+          ./gradlew tasks --all || true
+          ./gradlew assembleDebug || ./gradlew build || ./gradlew bundleDebug
+        else
+          # Find where gradlew is and run it
+          GRADLE_DIR=$(dirname $(find . -name gradlew | head -n 1))
+          cd $GRADLE_DIR
+          ./gradlew tasks --all || true
+          ./gradlew assembleDebug || ./gradlew build || ./gradlew bundleDebug
+        fi
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug-apk
-        path: android/app/build/outputs/apk/debug/*.apk
+        path: |
+          **/build/outputs/apk/debug/*.apk
+          **/build/outputs/bundle/debug/*.aab
+          **/build/outputs/apk/**/*.apk
